@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fragebogen Visualisierung</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js"></script>
+    <style>
+        table, th, td {
+        border: 1px solid black;
+        }
+        @media only screen and (min-width: 1024px) {
+            .grid {
+                display: grid;
+                grid-gap: 40px;
+                padding: 40px;
+                grid-template-columns: repeat(3, auto); /* Drei Spalten */
+            }
+            .grid__item {
+                display: grid;
+                grid-template-rows: auto auto; /* Zwei Zeilen */
+                grid-gap: 40px; /* Abstand zwischen den Zeilen */
+            }
+
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .toggle-label {
+            margin-left: 10px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .tab {
+            display: none;
+        }
+        
+        .tab.active {
+            display: block;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tabs button {
+            background-color: #f1f1f1;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+        
+        .tabs button.active {
+            background-color: #ccc;
+        }
+        
+        #customLegend1, #customLegend2, #customLegend3 {
+            display: none;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+        }
+
+        #customLegend1 ul, #customLegend2 ul, #customLegend3 ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #customLegend1 li, #customLegend2 li, #customLegend3 li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-symbol {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .legend-mean {
+            background-color: rgba(0, 0, 0, 1);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-outlier {
+            background-color: rgba(54, 162, 235, 1);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-percentile {
+            width: 30px;
+            border-top: 2px solid rgba(54, 162, 235, 1);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Fragebogen Visualisierung</h1>
+    <button onclick="window.location.href='/index.html'" style="margin-bottom: 20px;">HEKATE</button>
+    <div>
+        <label for="studentSelect" style="margin-bottom: 20px;">Select Student ID:</label>
+        <select id="studentSelect" style="margin-bottom: 20px;">
+            <option value="x" selected>Select Student ID</option>
+        </select>
+    </div>    
+    
+    <div class="tabs">
+        <button class="tablinks active" onclick="openTab(event, 'ILS')">ILS Lernverhaltenstest</button>
+        <button class="tablinks" onclick="openTab(event, 'BFI')">BFI-10 Lernverhaltenstest</button>
+        <button class="tablinks" onclick="openTab(event, 'LIST')">LIST-K Lernverhaltenstest</button>
+    </div>
+
+    <div id="ILS" class="tab active">
+        <h2>ILS Lernverhaltenstest</h2>
+        <button id="downloadILSChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div class="toggle-container">
+            <span class="toggle-label" id="toggleLabel">Barplot     </span>
+            <label class="switch">
+                <input type="checkbox" id="ILSchartToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="toggleLabel">Boxplot</span>
+        </div>
+        <div>
+            <canvas id="ILSChartCanvas" style="margin-bottom: 20px;"></canvas>
+            <div id="customLegend1">
+                <ul>
+                    <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                    <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                </ul>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>Dimension</th>
+                <th>Learning Style</th>
+                <th>Student Learns By</th>
+            </tr>
+            <tr>
+                <td rowspan="2">Processing</td>
+                <td>Active</td>
+                <td>Interacting in a group, interacting with learning material, actively trying new things, trying something out.</td>
+            </tr>
+            <tr>
+                <td>Reflective</td>
+                <td>Individual or small group interaction or people they trust, thinking about the material.</td>
+            </tr>
+            <tr>
+                <td rowspan="2">Perception</td>
+                <td>Sensing</td>
+                <td>Practicing concrete materials and real-world application. Practical and details-oriented. Learners tend to be more patient with details.</td>
+            </tr>
+            <tr>
+                <td>Intuitive</td>
+                <td>Theories and underlying details, theorems, meanings, definitions. Innovative and creative personality.</td>
+            </tr>
+            <tr>
+                <td rowspan="2">Input</td>
+                <td>Visual</td>
+                <td>Remembering learning elements they see. Pictures, flowcharts, videos, charts, graphs.</td>
+            </tr>
+            <tr>
+                <td>Verbal</td>
+                <td>Remembering written and spoken words. Textual information, speaking out.</td>
+            </tr>
+            <tr>
+                <td rowspan="2">Understanding</td>
+                <td>Sequential</td>
+                <td>Linear, logical, small steps to finish learning.</td>
+            </tr>
+            <tr>
+                <td>Global</td>
+                <td>Random large steps, without connections to finish learning. Able to solve problems but fail to explain them.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="BFI" class="tab">
+        <h2>BFI-10 Lernverhaltenstest</h2>
+        <button id="downloadBFIChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div class="toggle-container">
+            <span class="toggle-label" id="toggleLabel">Radarplot     </span>
+            <label class="switch">
+                <input type="checkbox" id="BFIchartToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="toggleLabel">Boxplot</span>
+        </div>
+        <div>
+            <canvas id="BFIChartCanvas"></canvas>
+            <div id="customLegend2">
+                <ul>
+                    <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                    <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                </ul>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>Personality Trait</th>
+                <th>Students Personality</th>
+            </tr>
+            <tr>
+                <td>Neuroticism</td>
+                <td>Handling negative things. Low self-esteem, irrational perfectionistic beliefs, pessimistic.</td>
+            </tr>
+            <tr>
+                <td>Extraversion</td>
+                <td>Enthusiasm. Social skills, numerous friendships, enterprising vocational interests, participation in sports, club memberships.</td>
+            </tr>
+            <tr>
+                <td>Openness</td>
+                <td>Interested in new things. Interested in traveling, having many hobbies, knowledge of foreign culture and cuisine, diverse vocational interests, friends who share tastes.</td>
+            </tr>
+            <tr>
+                <td>Agreeableness</td>
+                <td>Interpersonal behavior. Forgiving attitude, believes in cooperation, inoffensive language, reputation as a pushover.</td>
+            </tr>
+            <tr>
+                <td>Conscientiousness</td>
+                <td>Behavior towards obligations. Leadership skills, long-term plans, organized support network, technical expertise.</td>
+            </tr>
+        </table>   
+    </div>
+    <div id="LIST" class="tab">
+        <h2>LIST-K Lernverhaltenstest</h2>
+        <button id="downloadLISTChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div class="toggle-container">
+            <span class="toggle-label" id="toggleLabel">Radarplot     </span>
+            <label class="switch">
+                <input type="checkbox" id="LISTchartToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="toggleLabel">Boxplot</span>
+        </div>
+        <div>
+            <canvas id="LISTChartCanvas"></canvas>
+            <div id="customLegend3">
+                <ul>
+                    <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                    <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                    <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                </ul>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>Learning Strategy</th>
+                <th>Student Strategy</th>
+            </tr>
+            <tr>
+                <td>Cognitive</td>
+                <td>Organizing (self-organizing, outline and notes preparation), elaborating (application-oriented, concrete examples, comparing with self experiences), critical review (self-questioning, critical approach, examine critically), revision (memorize concepts with technical terms, by heart learn rules, technical terms, or formulas, by heart learning content from several resources as far as possible)</td>
+            </tr>
+            <tr>
+                <td>Meta-cognitive</td>
+                <td>Plans and targets (planning learning targets, planning the learning process), Inspection (self-assessing the learned concepts, self-examining, self-reviewing the learned concepts), Regulating (self-regulating the learning strategy based on the situation like difficulty, realization of learning process etc.)</td>
+            </tr>
+            <tr>
+                <td>Managing Internal Resources</td>
+                <td>Attention (Management: the focus and concentration on learning content), Effort (Management: not giving up or dropping out to various circumstances like difficult learning concepts, etc. spending more time or extra effort when required), Time (Management: dedicated time plan for studying)</td>
+            </tr>
+            <tr>
+                <td>Managing External Resources</td>
+                <td>Learning with fellow students (collaborating or teamwork, discussion, asking for help), Literature review (when something is not clear, do a literature review for additional resources, but only textual sources), Learning environment (planning, organizing the learning environment to avoid possible distractions, positive mind)</td>
+            </tr>
+        </table>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>

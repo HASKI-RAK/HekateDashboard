@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nutzungsparameter Visualisierung</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix"></script>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .toggle-label {
+            margin-left: 10px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tabs button {
+            background-color: #f1f1f1;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+        .tabs button.active {
+            background-color: #ccc;
+        }
+        #customLegend1 {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+        }
+        #customLegend1 ul {
+            list-style: none;
+            padding: 0;
+        }
+        #customLegend1 li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        #customLegend1 .legend-symbol {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        #customLegend2 {
+            display: none;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+        }
+        #customLegend2 ul {
+            list-style: none;
+            padding: 0;
+        }
+        #customLegend2 li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        #customLegend2 .legend-symbol {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        #customLegend3 {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+        }
+        #customLegend3 ul {
+            list-style: none;
+            padding: 0;
+        }
+        #customLegend3 li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        #customLegend3 .legend-symbol {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        #customLegend4 {
+            display: none;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+        }
+        #customLegend4 ul {
+            list-style: none;
+            padding: 0;
+        }
+        #customLegend4 li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+        #customLegend4 .legend-symbol {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .legend-mean {
+            background-color: rgba(0, 0, 0, 1);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-outlier {
+            background-color: rgba(54, 162, 235, 1);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .legend-percentile {
+            width: 30px;
+            border-top: 2px solid rgba(54, 162, 235, 1);
+        }
+        #relativeAverageUsageLernelementChart {
+            width: 250px;
+            height: 250px;
+        }
+        #relativeUserUsageLernelementChart {
+            width: 250px;
+            height: 250px;
+        }
+        #heatmap {
+            width: 600px;
+            height: 400px;
+        }
+        #HeatmapChart {
+            width: 600px;
+            height: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Nutzungsparameter Visualisierung</h1>
+    <button onclick="window.location.href='/index.html'" style="margin-bottom: 20px;">HEKATE</button>
+    <div>
+        <label for="studentSelect" style="margin-bottom: 20px;">Select Student ID:</label>
+        <select id="studentSelect" style="margin-bottom: 20px;">
+            <option value="x" selected>Select Student ID</option>
+        </select>
+    </div>  
+
+    <div class="tabs">
+        <button class="tablinks active" data-tab="Gesamtnutzungsdauer">Gesamtnutzungsdauer</button>
+        <button class="tablinks" data-tab="NutzungsdauerLernelement">Nutzungsdauer pro Lernelement</button>
+        <button class="tablinks" data-tab="RelativeNutzungsdauer">Relative Nutzungsdauer pro Lernelement</button>
+        <button class="tablinks" data-tab="Gesamtanzahl">Gesamtanzahl</button>
+        <button class="tablinks" data-tab="AnzahlLernelement">Gesamtanzahl pro Lernelement</button>
+        <button class="tablinks" data-tab="Tageszeit">Tageszeit der Lernphasen</button>
+    </div>
+    
+    <div id="Gesamtnutzungsdauer" class="tab active">
+        <h2>Gesamtnutzungsdauer</h2>
+        <button id="downloadGesamtnutzungsdauerChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <div>
+                    <label for="timeSelect1">Select Time Unit:</label>
+                    <select id="timeSelect1" style="margin-bottom: 20px;">
+                        <option value="Seconds" selected>Seconds</option>
+                        <option value="Minutes" selected>Minutes</option>
+                        <option value="Hours" selected>Hours</option>
+                    </select>
+                </div>  
+                <canvas id="averageUsageChart" data-canvas draggable="true"></canvas>
+                <div>
+                    <label for="CategorySelect1">Select Learning Element Category:</label>
+                    <form id="CategorySelect1">
+                        <label><input type="checkbox" name="filter" value="MS" checked="checked"> Manuskript</label><br>
+                        <label><input type="checkbox" name="filter" value="LG" checked="checked"> Lernziel</label><br>
+                        <label><input type="checkbox" name="filter" value="BO" checked="checked"> Kurzuebersicht</label><br>
+                        <label><input type="checkbox" name="filter" value="EX" checked="checked"> Uebung</label><br>
+                        <label><input type="checkbox" name="filter" value="QU" checked="checked"> Quiz</label><br>
+                        <label><input type="checkbox" name="filter" value="SU" checked="checked"> Zusammenfassung</label><br>
+                        <label><input type="checkbox" name="filter" value="AAM" checked="checked"> Zusatzmaterial auditiv</label><br>
+                        <label><input type="checkbox" name="filter" value="TAM" checked="checked"> Zusatzmaterial textuell</label><br>
+                        <label><input type="checkbox" name="filter" value="VAM" checked="checked"> Zusatzmaterial visuell</label><br>
+                        <label><input type="checkbox" name="filter" value="CT" checked="checked"> Kollaboratives Tool</label><br>
+                    </form>
+                    <button id="applyFilter1" style="margin-bottom: 20px;">Apply Filter</button>
+                </div>
+                <div id="customLegend1">
+                    <ul>
+                        <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                        <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="NutzungsdauerLernelement" class="tab">
+        <h2>Nutzungsdauer pro Lernelement</h2>
+        <button id="downloadNutzungsdauerChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div class="toggle-container">
+            <span class="toggle-label" id="toggleLabel">Barplot     </span>
+            <label class="switch">
+                <input type="checkbox" id="averageUsageLernelementChartToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="toggleLabel">Boxplot</span>
+        </div>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <div>
+                    <label for="timeSelect2">Select Time Unit:</label>
+                    <select style="margin-top: 20px;" id="timeSelect2">
+                        <option value="Seconds" selected>Seconds</option>
+                        <option value="Minutes" selected>Minutes</option>
+                        <option value="Hours" selected>Hours</option>
+                    </select>
+                </div>  
+                <canvas id="averageUsageLernelementChart" data-canvas draggable="true"></canvas>
+                <div id="customLegend2">
+                    <ul>
+                        <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                        <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="RelativeNutzungsdauer" class="tab">
+        <h2>Relative durchschnittliche Nutzungsdauer der Lernelemente</h2>
+        <button id="downloadRelativeDurchschnittlicheNutzungsdauerChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <canvas id="relativeAverageUsageLernelementChart" data-canvas draggable="true" margin-bottom: 50px;></canvas>
+            </div>
+        </div>
+        <h2>Relative Nutzungsdauer der Lernelemente</h2>
+        <button id="downloadRelativeNutzungsdauerChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <canvas id="relativeUserUsageLernelementChart" data-canvas draggable="true" margin-bottom: 50px;></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div id="Gesamtanzahl" class="tab">
+        <h2>Gesamtanzahl der Lernphasen</h2>
+        <button id="downloadGesamtanzahlChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <canvas id="averageTimesChart" data-canvas draggable="true"></canvas>
+                <div>
+                    <label for="CategorySelect2">Select Learning Element Category:</label>
+                    <form id="CategorySelect2">
+                        <label><input type="checkbox" name="filter" value="MS" checked> Manuskript</label><br>
+                        <label><input type="checkbox" name="filter" value="LG" checked> Lernziel</label><br>
+                        <label><input type="checkbox" name="filter" value="BO" checked> Kurzuebersicht</label><br>
+                        <label><input type="checkbox" name="filter" value="EX" checked> Uebung</label><br>
+                        <label><input type="checkbox" name="filter" value="QU" checked> Quiz</label><br>
+                        <label><input type="checkbox" name="filter" value="SU" checked> Zusammenfassung</label><br>
+                        <label><input type="checkbox" name="filter" value="AAM" checked> Zusatzmaterial auditiv</label><br>
+                        <label><input type="checkbox" name="filter" value="TAM" checked> Zusatzmaterial textuell</label><br>
+                        <label><input type="checkbox" name="filter" value="VAM" checked> Zusatzmaterial visuell</label><br>
+                        <label><input type="checkbox" name="filter" value="CT" checked> Kollaboratives Tool</label><br>
+                    </form>
+                    <button id="applyFilter2" style="margin-bottom: 20px;">Apply Filter</button>
+                </div>
+                <div id="customLegend3">
+                    <ul>
+                        <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                        <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="AnzahlLernelement" class="tab">
+        <h2>Gesamtanzahl der Lernphasen pro Lernelement</h2>
+        <button id="downloadAnzahlChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div class="toggle-container">
+            <span class="toggle-label" id="toggleLabel">Barplot     </span>
+            <label class="switch">
+                <input type="checkbox" id="averageTimesLernelementChartToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="toggleLabel">Boxplot</span>
+        </div>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <canvas id="averageTimesLernelementChart" data-canvas draggable="true"></canvas>
+                <div id="customLegend4">
+                    <ul>
+                        <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                        <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                        <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="Tageszeit" class="tab">
+        <h2>Tageszeit der Lernphasen</h2>
+        <button id="downloadGesamttageszeitChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <canvas id="heatmap" data-canvas draggable="true"></canvas>
+            </div>
+        </div>
+
+        <h2>Tageszeit der Lernphasen gewaehlter Student/Studentin</h2>
+        <button id="downloadTageszeitChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div style="display:block;" data-grid class="grid">
+            <div data-grid-item class="grid__item">
+                <canvas id="HeatmapChart" data-canvas draggable="true"></canvas>
+            </div>
+        </div>
+        <div>
+            <label for="CategorySelect3">Select Learning Element Category:</label>
+            <form id="CategorySelect3">
+                <label><input type="checkbox" name="filter" value="MS" checked> Manuskript</label><br>
+                <label><input type="checkbox" name="filter" value="LG" checked> Lernziel</label><br>
+                <label><input type="checkbox" name="filter" value="BO" checked> Kurzuebersicht</label><br>
+                <label><input type="checkbox" name="filter" value="EX" checked> Uebung</label><br>
+                <label><input type="checkbox" name="filter" value="QU" checked> Quiz</label><br>
+                <label><input type="checkbox" name="filter" value="SU" checked> Zusammenfassung</label><br>
+                <label><input type="checkbox" name="filter" value="AAM" checked> Zusatzmaterial auditiv</label><br>
+                <label><input type="checkbox" name="filter" value="TAM" checked> Zusatzmaterial textuell</label><br>
+                <label><input type="checkbox" name="filter" value="VAM" checked> Zusatzmaterial visuell</label><br>
+                <label><input type="checkbox" name="filter" value="CT" checked> Kollaboratives Tool</label><br>
+            </form>
+            <button id="applyFilter3" style="margin-bottom: 20px;">Apply Filter</button>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>

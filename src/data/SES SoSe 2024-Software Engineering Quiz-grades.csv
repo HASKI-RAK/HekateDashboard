@@ -1,0 +1,22 @@
+﻿"Last name","First name","Email address",State,"Started on",Completed,"Time taken",Grade/10.00,"Q. 1 /1.67","Q. 2 /1.67","Q. 3 /1.67","Q. 4 /1.67","Q. 5 /1.67","Q. 6 /1.67"
+Paulus,Sebastian,sebastian.paulus@st.oth-regensburg.de,Finished,"28 March 2024  9:43 AM","28 March 2024  9:44 AM","1 min 22 secs",9.44,1.67,1.67,1.11,1.67,1.67,1.67
+Meyer,Nicole,nicole1.meyer@st.oth-regensburg.de,Finished,"9 April 2024  4:59 PM","9 April 2024  5:02 PM","2 mins 19 secs",10.00,1.67,1.67,1.67,1.67,1.67,1.67
+Schmidt,Peter,peter.schmidt@example.com,Finished,"10 April 2024  3:21 PM","10 April 2024  3:23 PM","2 mins 2 secs",8.33,1.67,1.11,1.11,1.67,1.67,1.11
+Fischer,Laura,laura.fischer@example.com,Finished,"11 April 2024  8:11 AM","11 April 2024  8:14 AM","3 mins 5 secs",9.17,1.67,1.67,1.11,1.67,1.11,1.67
+Koch,Daniel,daniel.koch@example.com,Finished,"12 April 2024  10:32 AM","12 April 2024  10:35 AM","2 mins 48 secs",7.78,1.11,1.11,1.11,1.11,1.67,1.67
+Weber,Anna,anna.weber@example.com,Finished,"13 April 2024  11:45 AM","13 April 2024  11:47 AM","2 mins 15 secs",9.72,1.67,1.67,1.39,1.67,1.67,1.67
+Wagner,Max,max.wagner@example.com,Finished,"14 April 2024  2:20 PM","14 April 2024  2:22 PM","2 mins 30 secs",8.89,1.67,1.67,1.11,1.67,1.11,1.67
+Bauer,Emma,emma.bauer@example.com,Finished,"15 April 2024  9:10 AM","15 April 2024  9:12 AM","2 mins 9 secs",9.44,1.67,1.67,1.11,1.67,1.67,1.67
+Richter,Paul,paul.richter@example.com,Finished,"16 April 2024  4:00 PM","16 April 2024  4:02 PM","2 mins 15 secs",8.33,1.67,1.11,1.11,1.67,1.11,1.67
+Hoffmann,Julia,julia.hoffmann@example.com,Finished,"17 April 2024  10:50 AM","17 April 2024  10:52 AM","2 mins 35 secs",9.17,1.67,1.67,1.11,1.67,1.11,1.67
+Schneider,Leo,leo.schneider@example.com,Finished,"18 April 2024  12:34 PM","18 April 2024  12:36 PM","2 mins 5 secs",8.61,1.67,1.11,1.39,1.11,1.67,1.67
+Neumann,Elena,elena.neumann@example.com,Finished,"19 April 2024  3:45 PM","19 April 2024  3:47 PM","2 mins 18 secs",9.72,1.67,1.67,1.39,1.67,1.67,1.67
+Krause,Jonas,jonas.krause@example.com,Finished,"20 April 2024  8:30 AM","20 April 2024  8:32 AM","2 mins 45 secs",7.22,1.11,1.11,1.11,1.11,1.11,1.67
+Meier,Lena,lena.meier@example.com,Finished,"21 April 2024  1:15 PM","21 April 2024  1:17 PM","2 mins 5 secs",9.17,1.67,1.67,1.11,1.67,1.11,1.67
+Walter,Tim,tim.walter@example.com,Finished,"22 April 2024  9:50 AM","22 April 2024  9:52 AM","2 mins 15 secs",8.61,1.67,1.11,1.39,1.11,1.67,1.67
+Becker,Sophie,sophie.becker@example.com,Finished,"23 April 2024  4:30 PM","23 April 2024  4:32 PM","2 mins 25 secs",8.89,1.67,1.67,1.11,1.67,1.11,1.67
+Schulz,David,david.schulz@example.com,Finished,"24 April 2024  11:45 AM","24 April 2024  11:47 AM","2 mins 20 secs",9.44,1.67,1.67,1.11,1.67,1.67,1.67
+Lehmann,Mia,mia.lehmann@example.com,Finished,"25 April 2024  8:50 AM","25 April 2024  8:52 AM","2 mins 10 secs",8.33,1.67,1.11,1.11,1.67,1.11,1.67
+Schmidt,Pauline,pauline.schmidt@example.com,Finished,"26 April 2024  3:00 PM","26 April 2024  3:02 PM","2 mins 30 secs",8.89,1.67,1.67,1.11,1.67,1.11,1.67
+Maier,Johannes,johannes.maier@example.com,Finished,"27 April 2024  1:15 PM","27 April 2024  1:18 PM","3 mins 10 secs",9.72,1.67,1.67,1.39,1.67,1.67,1.67
+"Overall average",,,,,,,9.02,1.60,1.45,1.20,1.57,1.45,1.62

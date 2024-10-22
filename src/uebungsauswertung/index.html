@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Uebungen Visualisierung</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@3.6.0/build/index.umd.min.js"></script>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            margin-left: 10px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        #customLegend1 {
+            display: none;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+        }
+
+        #customLegend1 ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #customLegend1 li {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        #customLegend1 .legend-symbol {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .legend-mean {
+            background-color: rgba(0, 0, 0, 1);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-outlier {
+            background-color: rgba(54, 162, 235, 1);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-percentile {
+            width: 30px;
+            border-top: 2px solid rgba(54, 162, 235, 1);
+        }
+
+        .tab {
+            display: none;
+        }
+        
+        .tab.active {
+            display: block;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tabs button {
+            background-color: #f1f1f1;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+        
+        .tabs button.active {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Uebungen Visualisierung</h1>
+    <button onclick="window.location.href='/index.html'" style="margin-bottom: 20px;">HEKATE</button>
+    <div>
+        <label for="studentSelect" style="margin-bottom: 20px;">Select Student ID:</label>
+        <select id="studentSelect" style="margin-bottom: 20px;">
+            <option value="x" selected>Select Student ID</option>
+        </select>
+    </div>
+
+    <div class="tabs">
+        <button class="tablinks active" data-tab="AverageScores">Durchschnittliche Punktzahl</button>
+        <button class="tablinks" data-tab="JokerCount">Jokereinsaetze</button>
+        <button class="tablinks" data-tab="Histogram">Histogramm</button>
+    </div>
+
+    <div id="AverageScores" class="tab active">
+        <h2>Durchschnittliche Punktzahl pro Uebung</h2>
+        <button id="downloadPunktzahlChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <div class="toggle-container">
+            <span class="toggle-label" id="toggleLabel">Barplot</span>
+            <label class="switch">
+                <input type="checkbox" id="averageScoresChartToggle">
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label" id="toggleLabel">Boxplot</span>
+        </div>
+        <canvas id="averageScoresChart" draggable="true"></canvas>
+        <div id="customLegend1">
+            <ul>
+                <li><div class="legend-symbol legend-outlier"></div><span style="color: rgba(54, 162, 235, 1);">Outliers: </span> Ausreisser (farbige Punkte)</li>
+                <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">10th Percentile: </span> 10% Perzentil (farbige Linie aussen)</li>
+                <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">1st Quartile: </span> 25% Perzentil (farbige Linie anfang der Box)</li>
+                <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">Median: </span> Median (50% Perzentil) (farbige Linie mitte der Box)</li>
+                <li><div class="legend-symbol legend-mean"></div><span style="color: rgba(0, 0, 0, 1);">Mean: </span> Mittelwert (schwarzer Punkt)</li>
+                <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">3rd Quartile: </span> 75% Perzentil (farbige Linie ende der Box)</li>
+                <li><div class="legend-symbol legend-percentile"></div><span style="color: rgba(54, 162, 235, 1);">90th Percentile: </span> 90% Perzentil (farbige Linie aussen)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="JokerCount" class="tab">
+        <h2>Anzahl der Jokereinsaetze pro Uebung</h2>
+        <button id="downloadJokerChart" style="margin-bottom: 20px;">Download as PNG</button>
+        <canvas id="JokerCountChart" draggable="true"></canvas>
+    </div>
+
+    <div id="Histogram" class="tab">
+        <h2>Histogramm der einzelnen Uebungen</h2>
+        <button id="downloadHistogramChart" style="margin-bottom: 5px;">Download as PNG</button>
+        <button id="hideAllButton" style="margin-bottom: 5px;">Alle Uebungen ausblenden</button>
+        <button id="showAllButton" style="margin-bottom: 5px;">Alle Uebungen anzeigen</button>
+        <p>(Anzeigen/Ausblenden per Click auf Legende)</p>
+        <canvas id="HistogramChart" data-canvas draggable="true" id="lineChart"></canvas>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
